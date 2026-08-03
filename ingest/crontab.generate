@@ -1,0 +1,17 @@
+# HC_storage — random file generator
+# Install:
+#   crontab /home/amir/Desktop/HC_storage/ingest/crontab.generate
+# Verify:
+#   crontab -l
+# Logs:
+#   tail -f ~/HC_storage_data/logs/generate_files.log
+#
+# Schedule: every 4 minutes, create 3 random files in the inbox.
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOME=/home/amir
+MAILTO=""
+
+# minute hour day month weekday command
+*/4 * * * * /home/amir/Desktop/HC_storage/ingest/run_generate_cron.sh

@@ -1,0 +1,22 @@
+# HC_storage — host ingest crons
+# Install (replaces this user's crontab with the jobs below):
+#   crontab /home/amir/Desktop/HC_storage/ingest/crontab.ingest
+# Verify:
+#   crontab -l
+# Logs:
+#   tail -f ~/HC_storage_data/logs/generate_files.log
+#   tail -f ~/HC_storage_data/logs/check_aged_files.log
+#
+# Pipeline:
+#   1) every 4 min  -> create 3 random files in inbox/
+#   2) every 6 min  -> move files older than 10 min to ready_for_hot/
+#   3) (later)      -> upload ready_for_hot/ to Hot storage (shell CLI / Python API)
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOME=/home/amir
+MAILTO=""
+
+# minute hour day month weekday command
+*/4 * * * * /home/amir/Desktop/HC_storage/ingest/run_generate_cron.sh
+*/6 * * * * /home/amir/Desktop/HC_storage/ingest/run_check_aged_cron.sh
