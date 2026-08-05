@@ -1,0 +1,28 @@
+# HC_storage lab SSH config
+# Use:  ssh -F infrastructure/ssh_config sw-proxy
+# Or merge into ~/.ssh/config
+
+Host sw-proxy
+  HostName 172.30.201.247
+  User bbdh
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+  StrictHostKeyChecking accept-new
+
+Host sw-hot
+  HostName 172.30.201.248
+  User bbdh
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+  StrictHostKeyChecking accept-new
+
+Host sw-cold
+  HostName 172.30.201.249
+  User bbdh
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+  StrictHostKeyChecking accept-new
+
+Host sw-proxy sw-hot sw-cold
+  ServerAliveInterval 30
+  ServerAliveCountMax 3

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Convenience launcher: hc-storage → client/hc_storage.py
+# Optional: symlink into ~/bin or /usr/local/bin
+exec /usr/bin/python3 "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/hc_storage.py" "$@"

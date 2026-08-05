@@ -6,11 +6,15 @@
 # Logs:
 #   tail -f ~/HC_storage_data/logs/generate_files.log
 #   tail -f ~/HC_storage_data/logs/check_aged_files.log
+#   tail -f ~/HC_storage_data/logs/upload_hot_cli.log
+#   tail -f ~/HC_storage_data/logs/upload_hot_api.log
 #
 # Pipeline:
-#   1) every 4 min  -> create 3 random files in inbox/
+#   1) every 4 min  -> create random files in inbox/
 #   2) every 6 min  -> move files older than 10 min to ready_for_hot/
-#   3) (later)      -> upload ready_for_hot/ to Hot storage (shell CLI / Python API)
+#   3) every 8 min  -> upload ready_for_hot/ to Hot (CLI OR API — enable only one)
+#
+# Upload crons stay commented until Swift on sw-proxy is reachable.
 
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -20,3 +24,10 @@ MAILTO=""
 # minute hour day month weekday command
 */4 * * * * /home/amir/Desktop/HC_storage/ingest/run_generate_cron.sh
 */6 * * * * /home/amir/Desktop/HC_storage/ingest/run_check_aged_cron.sh
+
+# Uncomment ONE of these after Swift Hot is up (M4+):
+# */8 * * * * /home/amir/Desktop/HC_storage/ingest/run_upload_hot_cli_cron.sh
+# */8 * * * * /home/amir/Desktop/HC_storage/ingest/run_upload_hot_api_cron.sh
+
+# Uncomment after Hot+Cold containers exist (M7):
+# */10 * * * * /home/amir/Desktop/HC_storage/tiering/run_tier_migrate_cron.sh

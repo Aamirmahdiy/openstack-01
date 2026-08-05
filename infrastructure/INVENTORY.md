@@ -1,80 +1,38 @@
-# HC_storage — VirtualBox Inventory (Phase 0)
+# HC_storage — Company VM Inventory (M0 — verified)
 
-## Host-Only network
+## Cluster topology (live)
 
-| Setting | Value |
-|---|---|
-| Adapter | `vboxnet0` |
-| Host IP | `192.168.56.1` |
-| Netmask | `255.255.255.0` |
-| DHCP | Disabled (guests use static IPs) |
+Use these names **everywhere** (SSH, `/etc/hosts`, Swift configs, docs).
 
-Each VM has:
+| Role | Hostname | IP | SSH user | OS |
+|---|---|---|---|---|
+| Proxy + TempAuth + rings + tierer | `sw-proxy` | `172.30.201.247` | `bbdh` | RHEL 10.2 |
+| **Only** Hot storage node | `sw-hot` | `172.30.201.248` | `bbdh` | RHEL 10.2 |
+| **Only** Cold storage node | `sw-cold` | `172.30.201.249` | `bbdh` | RHEL 10.2 |
 
-- **NIC1** — NAT (internet / `apt`)
-- **NIC2** — Host-Only `vboxnet0` (cluster traffic)
+- Host workstation: Ubuntu 22.04 (`10.60.20.70`), SSH key `~/.ssh/id_ed25519`
+- Do **not** commit VM passwords into this repo
 
-## Virtual machines
+## Disks
 
-| VM | Hostname (set at install) | RAM | vCPU | System disk | Data disk | Host-Only IP |
-|---|---|---|---|---|---|---|
-| `proxy-01` | `proxy-01` | 2048 MB | 1 | 20 GB | — | `192.168.56.10` |
-| `hot-01` | `hot-01` | 1536 MB | 1 | 30 GB | 10 GB | `192.168.56.11` |
-| `cold-01` | `cold-01` | 1536 MB | 1 | 30 GB | 15 GB | `192.168.56.12` |
-| `mgmt-01` | `mgmt-01` | 1536 MB | 1 | 20 GB | — | `192.168.56.20` |
+No second disk yet. Pending: loopback XFS at `/srv/node/d1` **or** attach real disks.
 
-VM files: `~/VirtualBox VMs/<name>/`  
-Installer ISO: `~/iso/ubuntu-22.04.5-live-server-amd64.iso`  
-Create/re-attach script: [`create_vms.sh`](create_vms.sh)
+## Blockers before Swift install (M1+)
 
-## Install Ubuntu Server 22.04 (interactive)
+- RHEL: no enabled `dnf` repos until subscription / Satellite / mirror is configured
+- Data device on `sw-hot` / `sw-cold` not created yet
 
-Do one VM at a time (RAM is limited on the host).
+## M0 status
 
-```bash
-# After ISO download finishes, refresh DVD attach:
-~/Desktop/HC_storage/infrastructure/create_vms.sh
+- [x] SSH key auth (`ssh sw-proxy` / `sw-hot` / `sw-cold`)
+- [x] `/etc/hosts` on VMs with `sw-*` names
+- [x] Chrony enabled; clocks synchronized
+- [ ] dnf repos
+- [ ] data path (loopback or real disk)
 
-VBoxManage startvm proxy-01 --type gui
-```
+## Host-side work (can proceed while VMs blocked)
 
-During install, for each VM:
-
-1. Hostname = table above (`proxy-01`, etc.)
-2. Create a user (e.g. `swiftlab`) with SSH allowed
-3. Install **OpenSSH server**
-4. Disks:
-   - Use the **system** disk for Ubuntu (`/`)
-   - On `hot-01` / `cold-01`, leave the **second disk unused** for now (Swift data disk later → `/srv/node/sdb1`)
-5. After first boot, configure Host-Only static IP (netplan). Example for `proxy-01` (`enp0s8` is usually NIC2):
-
-```yaml
-network:
-  version: 2
-  ethernets:
-    enp0s3:
-      dhcp4: true
-    enp0s8:
-      dhcp4: false
-      addresses: [192.168.56.10/24]
-```
-
-6. `/etc/hosts` on every guest (and on the host):
-
-```
-192.168.56.10 proxy-01
-192.168.56.11 hot-01
-192.168.56.12 cold-01
-192.168.56.20 mgmt-01
-```
-
-7. From the host, verify: `ping 192.168.56.10` and `ssh swiftlab@192.168.56.10`
-
-## Useful commands
-
-```bash
-VBoxManage list vms
-VBoxManage list hostonlyifs
-VBoxManage startvm proxy-01 --type gui
-VBoxManage controlvm proxy-01 poweroff
-```
+- Ingest generate + age check (existing)
+- Dual Hot uploaders: [`ingest/upload_hot_cli.sh`](../ingest/upload_hot_cli.sh), [`ingest/upload_hot_api.py`](../ingest/upload_hot_api.py)
+- Env example: [`config/hc_storage.env.example`](../config/hc_storage.env.example)
+- Swift config templates: [`infrastructure/swift-templates/`](swift-templates/)
